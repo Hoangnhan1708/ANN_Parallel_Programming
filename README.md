@@ -1,4 +1,4 @@
-
+# Reference from https://github.com/MrNeRF/MNIST_CUDA
 # MNIST Classifier with CUDA and C++
 
 This project is a MNIST classifier using CUDA and C++ to code an MLP from scratch. 

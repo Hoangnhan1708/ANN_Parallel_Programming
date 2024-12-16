@@ -61,7 +61,8 @@ struct SimpleNN : public NeuralNetwork {
         const float* output = nullptr;
         output = _fc1->Forward(d_input, std::make_unique<ReLU>());
         output = _fc2->Forward(output, std::make_unique<ReLU>());
-        output = _fc3->Forward(output, std::make_unique<LogSoftMax>());
+        // Changed
+        output = _fc3->Forward(output, std::make_unique<SoftMax>());
         ArgMax(output, _d_predictions, 10, _batch_size);
         // For now we are just returning the accuracy and not the predicted labels
         return ComputeAccuracy(_d_predictions, d_labels, _batch_size);
@@ -173,7 +174,7 @@ TEST(ForwardPassLossLibtorch, BasicTest) {
 
     auto [pred1, pred2, pred3] = torchNet->forward(inputTensor);
 
-    // Because Simple_NN outputs logsoftmax, we need to convert it
+    // Because Simple_NN outputs softmax, we need to convert it
     auto torchnet_Layer1_output = pred1.data_ptr<float>();
     auto torchnet_Layer2_output = pred2.data_ptr<float>();
     auto torchnet_Layer3_output = pred3.data_ptr<float>();

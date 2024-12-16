@@ -62,6 +62,7 @@ struct ANN : public NeuralNetwork {
         const float* output = nullptr;
         output = _fc1->Forward(d_input, std::make_unique<ReLU>());
         output = _fc2->Forward(output, std::make_unique<ReLU>());
+        // Changed
         output = _fc3->Forward(output, std::make_unique<SoftMax>());
         ArgMax(output, _d_predictions, 10, _batch_size);
         // For now we are just returning the accuracy and not the predicted labels

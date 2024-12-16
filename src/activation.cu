@@ -30,7 +30,6 @@ void LogSoftMax::operator()(const int batch_size,
     const int threadsPerBlock = 256;
     const int numBlocks = (total_size + threadsPerBlock - 1) / threadsPerBlock;
 
-    //__global__ void LogSoftmaxBatkh(const float* input, float* output, const int outputSize, const int batchSize) {
     LogSoftmaxKernel<<<numBlocks, threadsPerBlock>>>(output_size, batch_size, d_value);
     CHECK_LAST_CUDA_ERROR();
 }

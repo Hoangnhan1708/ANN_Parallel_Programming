@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     CHECK_CUDA_ERROR(cudaMalloc((void**)&d_validationLabels, batchSize * sizeof(int))); // Allocate device memory for labels
     int validation_labels[batchSize];
 
-    static const int num_epochs = 20;
+    static const int num_epochs = 60;
 
     auto rng = std::default_random_engine{};
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
             // Copy loss from device to host memory
             const float loss = model.Forward(d_input, d_labels);
             model.Backward();
-            model.Update(0.01f);
+            model.Update(0.001f);
 
             total_loss += loss;
             ++total_batches;

@@ -14,13 +14,7 @@ __global__ void CrossEntropyLossKernel(const float* __restrict__ predictions,
                                        const int numClasses,
                                        const int batchSize);
 
-__global__ void LogSoftmaxCrossEntropyLossKernel(const float* __restrict__ values,
-                                                 float* __restrict__ predictions,
-                                                 const int* __restrict__ labels,
-                                                 float* __restrict__ loss,
-                                                 float* __restrict__ dZ,
-                                                 const int output_size,
-                                                 const int batch_size);
+
 __global__ void SoftmaxCrossEntropyLossKernel(const float* __restrict__ values,
                                                  float* __restrict__ predictions,
                                                  const int* __restrict__ labels,
@@ -55,13 +49,6 @@ float CrossEntropyLoss::operator()(const float* d_values, const int* d_labels) {
                                                                         _d_dZ,
                                                                         _num_classes,
                                                                         _batch_size);
-    // LogSoftmaxCrossEntropyLossKernel<<<blocksPerGrid, threadsPerBlock>>>(d_values,
-    //                                                                      _d_predictions,
-    //                                                                      d_labels,
-    //                                                                      _d_loss,
-    //                                                                      _d_dZ,
-    //                                                                      _num_classes,
-    //                                                                      _batch_size);
 
     CHECK_LAST_CUDA_ERROR();
     CHECK_CUDA_ERROR(cudaMemcpy(&loss, _d_loss, sizeof(float), cudaMemcpyDeviceToHost));
@@ -87,47 +74,6 @@ __global__ void CrossEntropyLossKernel(const float* __restrict__ predictions,
     atomicAdd(loss, -prediction);
 }
 
-__global__ void LogSoftmaxCrossEntropyLossKernel(const float* __restrict__ values,
-                                                 float* __restrict__ predictions,
-                                                 const int* __restrict__ labels,
-                                                 float* __restrict__ loss,
-                                                 float* __restrict__ dZ,
-                                                 const int output_size,
-                                                 const int batch_size) {
-    const int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if (idx >= batch_size)
-        return;
-
-    float maxInput = -INFINITY;
-
-#pragma unroll
-    for (int j = 0; j < output_size; ++j) {
-        maxInput = fmaxf(maxInput, values[idx * output_size + j]);
-    }
-
-    float sum = 0.0f;
-#pragma unroll
-    for (int j = 0; j < output_size; ++j) {
-        sum += expf(values[idx * output_size + j] - maxInput);
-    }
-
-    const int label = labels[idx];
-    float log_softmax = 0.0f;
-
-#pragma unroll
-    for (int j = 0; j < output_size; ++j) {
-        float softmax = expf(values[idx * output_size + j] - maxInput) / sum;
-        predictions[idx * output_size + j] = logf(softmax + 1e-8f);
-
-        if (j == label) {
-            log_softmax = predictions[idx * output_size + j];
-        }
-
-        dZ[idx * output_size + j] = softmax - (j == label ? 1.0f : 0.0f);
-    }
-
-    atomicAdd(loss, -log_softmax);
-}
 
 __global__ void SoftmaxCrossEntropyLossKernel(const float* __restrict__ values,
                                               float* __restrict__ predictions,

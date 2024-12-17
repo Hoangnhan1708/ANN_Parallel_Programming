@@ -13,11 +13,6 @@ struct ReLU : public Activation {
                     float* d_value);
 };
 
-struct LogSoftMax : public Activation {
-    void operator()(const int batch_size,
-                    const int output_size,
-                    float* d_value);
-};
 // Changed
 struct SoftMax : public Activation {
     void operator()(const int batch_size,
